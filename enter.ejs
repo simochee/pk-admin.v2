@@ -1,0 +1,125 @@
+<% include tmp/_head %>
+<body ng-app="myapp">
+	
+	<%- include('tmp/_navbar', {active: 1}) %>
+
+	<div class="container-wrap">
+
+		<div class="row">
+			<div class="col-xs-4" ng-controller="userSelCtrl">
+				<h2>ユーザーの選択
+					<p class="small">入庫するユーザーを選んでください</p>
+				</h2>
+				<h3>検索 <small>情報を入力して候補を絞ります</small></h3>
+				<form class="form-horizontal">
+					<div class="form-group">
+						<label for="userID" class="col-xs-3 control-label">ID</label>
+						<div class="col-xs-9">
+							<input type="text" class="form-control" id="userId" ng-model="id">
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="userBirth" class="col-xs-3 control-label">誕生日</label>
+						<div class="col-xs-9">
+							<input type="text" class="form-control" id="userBirth">
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="userName" class="col-xs-3 control-label">名前</label>
+						<div class="col-xs-9">
+							<input type="text" class="form-control" id="userName" placeholder="スペース区切りで複数指定" ng-model="name">
+						</div>
+					</div>
+				</form>
+				<h3>候補 <small>対象のユーザーを選択</small></h3>
+				<div class="list-group scroll-y last-order">
+					<a class="list-group-item" href="#" ng-repeat="user in users | filterId:id | filterName:name" ng-class="{'active': $confirm.userSel.id == user.id}" ng-click="changeSelect(user)">
+						<h4 class="list-gruop-item-heading">{{user.name}}</h4>
+						<p class="list-gropu-item text">id: {{user.id}}</p>
+					</a>
+				</div>
+			</div>
+
+			<div class="col-xs-4">
+				
+				<h2>駐車区画選択
+					<p class="small">駐車区画を選択してください</p>
+				</h2>
+
+				<p>
+					<button type="button" class="btn btn-info btn-block">地図を表示</button>
+				</p>
+
+				<div class="scroll-y last-order">
+					<table class="table table-striped table-hover" ng-controller="parkingSelCtrl">
+						<thead>
+							<tr>
+								<th>ID</th>
+								<th>店舗</th>
+								<th>予約</th>
+								<th>距離</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="park in parks" ng-class="{'primary': $confirm.parkSel.id == park.id}" ng-click="changeSelect(park)">
+								<td>{{park.id}}</td>
+								<td>{{park.shop}}</td>
+								<td>{{park.reserve == null ? '-' : park.reserve}}</td>
+								<td>--</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+
+			</div>
+
+			<div class="col-xs-4 confirm-area" ng-controller="confirmCtrl">
+				.
+				<h2>確認
+					<p class="small">お客様へ内容をご確認します。</p>
+				</h2>
+				<h3>使用者</h3>
+				<table class="table table-bordered">
+					<tr>
+						<th>氏名</th>
+						<td>{{isNull(userSel.name)}}</td>
+					</tr>
+					<tr>
+						<th>ID</th>
+						<td>{{isNull(userSel.id)}}</td>
+					</tr>
+					<tr>
+						<th>所持P</th>
+						<td>{{isNull(userSel.pt)}} pts</td>
+					</tr>
+				</table>
+				<h3>駐車場所</h3>
+				<table class="table table-bordered">
+					<tr>
+						<th>区画ID</th>
+						<td>{{isNull(parkSel.id)}}</td>
+					</tr>
+					<tr>
+						<th>予約</th>
+						<td>{{isNull(parkSel.reserve)}}</td>
+					</tr>
+				</table>
+				<p>
+					<form action="enter-fin.html" method="get">
+						<input type="hidden" ng-value="userSel.id" name="userId">
+						<input type="hidden" ng-value="parkSel.id" name="parkId">
+						<button type="submit" class="btn btn-primary btn-block btn-lg" ng-disabled="userSel.id === null || parkSel.id === null">入庫</button>
+					</form>
+				</p>
+			</div>
+		</div>
+	</div>
+
+	<% include tmp/tutorial/_enter %>
+
+	<% include tmp/_scripts %>
+	<script src="js/enter.js"></script>
+	<script src="js/tutorial/enter.js"></script>
+
+</body>
+</html>

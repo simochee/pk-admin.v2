@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>myAdmin</title>
+	<link rel="stylesheet" href="css/bootstrap.min.css">
+	<link rel="stylesheet" href="css/style.css">
+</head>
+<body ng-app="myapp">
+	
+	<nav class="navbar navbar-fuxed-top navbar-default">
+	<div class="container">
+		<div class="navbar-header">
+			<span class="navbar-brand">沼写真館</span>
+		</div>
+
+		<ul class="nav navbar-nav">
+			<li class="active"><a href="enter.html">代理入庫</a></li>
+			<li><a href="#">代理出庫</a></li>
+			<li><a href="#">駐車状況</a></li>
+			<li><a href="#">Pチャージ</a></li>
+			<li class="dropdown">
+				<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+					その他
+					<span class="caret"></span>
+				</a>
+				<ul class="dropdown-menu" role="menu">
+					<li><a href="#">設定</a></li>
+					<li><a href="#">個人情報について</a></li>
+				</ul>
+			</li>
+		</ul>
+		
+		<ul class="nav navbar-nav navbar-right">
+			<li class="dropdown">
+				<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+					<span class="glyphicon glyphicon-question-sign"></span> ヘルプ
+					<span class="caret"></span>
+				</a>
+				<ul class="dropdown-menu" role="menu">
+					<li><a href="#">このページの使い方</a></li>
+					<li><a href="#">すべてのヘルプ</a></li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+</nav>
+
+	<div class="container-wrap">
+
+		<div class="row">
+			<div class="col-xs-4" ng-controller="userSelCtrl">
+				<h2>ユーザーの選択
+					<p class="small">入庫するユーザーを選んでください</p>
+				</h2>
+				<h3>検索 <small>情報を入力して候補を絞ります</small></h3>
+				<form class="form-horizontal">
+					<div class="form-group">
+						<label for="userID" class="col-xs-3 control-label">ID</label>
+						<div class="col-xs-9">
+							<input type="text" class="form-control" id="userId" ng-model="id">
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="userBirth" class="col-xs-3 control-label">誕生日</label>
+						<div class="col-xs-9">
+							<input type="text" class="form-control" id="userBirth">
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="userName" class="col-xs-3 control-label">名前</label>
+						<div class="col-xs-9">
+							<input type="text" class="form-control" id="userName" placeholder="スペース区切りで複数指定" ng-model="name">
+						</div>
+					</div>
+				</form>
+				<h3>候補 <small>対象のユーザーを選択</small></h3>
+				<div class="list-group scroll-y last-order">
+					<a class="list-group-item" href="#" ng-repeat="user in users | filterId:id | filterName:name" ng-class="{'active': $confirm.userSel.id == user.id}" ng-click="changeSelect(user)">
+						<h4 class="list-gruop-item-heading">{{user.name}}</h4>
+						<p class="list-gropu-item text">id: {{user.id}}</p>
+					</a>
+				</div>
+			</div>
+
+			<div class="col-xs-4">
+				
+				<h2>駐車区画選択
+					<p class="small">駐車区画を選択してください</p>
+				</h2>
+
+				<p>
+					<button type="button" class="btn btn-info btn-block">地図を表示</button>
+				</p>
+
+				<div class="scroll-y last-order">
+					<table class="table table-striped table-hover" ng-controller="parkingSelCtrl">
+						<thead>
+							<tr>
+								<th>ID</th>
+								<th>店舗</th>
+								<th>予約</th>
+								<th>距離</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="park in parks" ng-class="{'primary': $confirm.parkSel.id == park.id}" ng-click="changeSelect(park)">
+								<td>{{park.id}}</td>
+								<td>{{park.shop}}</td>
+								<td>{{park.reserve == null ? '-' : park.reserve}}</td>
+								<td>{{getDist(park.lat, park.lng)}}</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+
+			</div>
+
+			<div class="col-xs-4 confirm-area" ng-controller="confirmCtrl">
+				<h2>確認
+					<p class="small">お客様へ内容をご確認します。</p>
+				</h2>
+				<h3>使用者</h3>
+				<table class="table table-bordered">
+					<tr>
+						<th>氏名</th>
+						<td>{{isNull(userSel.name)}}</td>
+					</tr>
+					<tr>
+						<th>ID</th>
+						<td>{{isNull(userSel.id)}}</td>
+					</tr>
+					<tr>
+						<th>所持P</th>
+						<td>{{isNull(userSel.pt)}} pts</td>
+					</tr>
+				</table>
+				<h3>駐車場所</h3>
+				<table class="table table-bordered">
+					<tr>
+						<th>区画ID</th>
+						<td>{{isNull(parkSel.id)}}</td>
+					</tr>
+					<tr>
+						<th>予約</th>
+						<td>{{isNull(parkSel.reserve)}}</td>
+					</tr>
+					<tr>
+						<th>距離</th>
+						<td>{{getDist(parkSel.lat, parkSel.lng)}}</td>
+					</tr>
+				</table>
+				<p>
+					<form action="enter-fin.html" method="get">
+						<input type="hidden" ng-value="userSel.id" name="userId">
+						<input type="hidden" ng-value="parkSel.id" name="parkId">
+						<button type="submit" class="btn btn-primary btn-block btn-lg" ng-disabled="userSel.id === null || parkSel.id === null">入庫</button>
+					</form>
+				</p>
+			</div>
+		</div>
+	</div>
+
+	<div class="tu-bg" id="tuBg">
+
+	<div class="tu-header">
+		
+		<div class="header-item pull-left" id="tuPrev">
+			
+			<span class="glyphicon glyphicon-backward"></span>
+			ひとつ戻る
+
+		</div>
+
+		<div class="header-item pull-right" id="tuFinish">
+			
+			<span class="glyphicon glyphicon-remove"></span>
+			終了
+
+		</div>
+
+	</div>
+
+	<p class="tu-tap-text">画面をタップで次へ</p>
+	
+	<div class="alert alert-info" tu-id="tu001">
+		代理入庫についてご説明します。
+	</div>
+
+	<div class="alert alert-info" tu-id="tu002">
+		代理入庫は、お客様に変わって入庫を行う作業です。
+	</div>
+
+</div>
+
+	<script src="js/jquery.min.js"></script>
+<script src="js/script.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/angular.min.js"></script>
+	<script type="text/javascript"
+      src="http://maps.google.com/maps/api/js?libraries=geometry&sensor=false">
+    </script>
+	<script src="js/enter.js"></script>
+
+</body>
+</html>
